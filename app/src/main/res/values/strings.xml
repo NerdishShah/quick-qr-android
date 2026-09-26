@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Quick QR</string>
+    <string name="scan_title">Scan QR code</string>
+    <string name="camera_permission_rationale">Camera access is required to scan QR codes.</string>
+    <string name="grant_camera">Grant camera permission</string>
+    <string name="open_settings">Open settings</string>
+    <string name="result_title">Scan result</string>
+    <string name="action_open">Open</string>
+    <string name="action_pair">Pair with passkey</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_scan_again">Scan again</string>
+    <string name="copied">Copied to clipboard</string>
+    <string name="pair_no_handler">No compatible passkey handler was found. Install or update Google Play Services, or copy the code for use in a supported authenticator.</string>
+    <string name="open_no_handler">No app can open this link.</string>
+    <string name="chip_url">URL</string>
+    <string name="chip_fido">FIDO / passkey</string>
+    <string name="chip_text">Text</string>
+    <string name="scan_hint">Point at a QR code</string>
+    <string name="history_title">Recent</string>
+    <string name="history_empty">No recent scans</string>
+    <string name="clear_history">Clear</string>
+</resources>
