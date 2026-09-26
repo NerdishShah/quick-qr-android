@@ -54,6 +54,75 @@ Install:
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+## Release APK
+
+Three ways to get an installable APK. **Never commit** a keystore, `keystore.properties`, or passwords — losing the release keystore permanently blocks Play Store updates for the same app ID.
+
+### Option A — Android Studio
+
+1. **Build → Generate Signed Bundle / APK…**
+2. Choose **APK** → **Next**
+3. **Create new…** keystore (or use an existing one). Store the `.jks` / `.keystore` file and passwords somewhere safe (password manager + offline backup).
+4. Select **release**, finish the wizard
+5. Install the generated APK on a device (sideload) or upload an **AAB** later for Play Console
+
+### Option B — CLI (local signed release)
+
+1. Create a keystore (interactive helper):
+
+   ```bash
+   ./scripts/create-keystore.sh
+   ```
+
+   Or manually:
+
+   ```bash
+   keytool -genkeypair -v -keystore release.jks -alias quickqr \
+     -keyalg RSA -keysize 2048 -validity 10000
+   ```
+
+2. Copy the example properties and fill in real values (file is gitignored):
+
+   ```bash
+   cp keystore.properties.example keystore.properties
+   # edit storeFile, storePassword, keyAlias, keyPassword
+   ```
+
+   Or set env vars instead: `STORE_FILE`, `STORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`.
+
+3. Build:
+
+   ```bash
+   ./gradlew assembleRelease
+   ```
+
+4. APK path:
+
+   ```text
+   app/build/outputs/apk/release/app-release.apk
+   ```
+
+   If signing props are missing, `assembleRelease` still runs but the APK is **unsigned** (fine for CI smoke tests; not for sideload/Play without signing).
+
+### Option C — GitHub Actions
+
+CI runs on every push to `main`, pull requests, and manual **workflow_dispatch**.
+
+1. Open the repo → **Actions** → **Android CI** → pick a run
+2. Download the **app-debug** artifact (`app-debug.apk`) — always built; good for first-time sideload **without** a keystore
+3. For a **signed release** APK, add these repository secrets (**Settings → Secrets and variables → Actions**):
+
+   | Secret | Value |
+   |--------|--------|
+   | `SIGNING_KEYSTORE_BASE64` | Base64 of your `.jks` / `.keystore` (`base64 -w0 release.jks` on Linux) |
+   | `STORE_PASSWORD` | Keystore password |
+   | `KEY_ALIAS` | Key alias (e.g. `quickqr`) |
+   | `KEY_PASSWORD` | Key password |
+
+4. Re-run the workflow (or push). When all four secrets are set, CI also uploads **app-release** (`app-release.apk`).
+
+Without those secrets, CI still succeeds and only uploads the debug APK.
+
 ## How Open vs Pair work
 
 | Action | When enabled | What happens |

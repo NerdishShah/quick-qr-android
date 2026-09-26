@@ -17,6 +17,40 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Load signing from env vars (CI) or keystore.properties (local). Never commit secrets.
+    val keystorePropertiesFile = rootProject.file("keystore.properties")
+    val keystoreProperties = java.util.Properties()
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(keystorePropertiesFile.inputStream())
+    }
+
+    fun signingProp(envName: String, fileKey: String): String? =
+        System.getenv(envName)?.takeIf { it.isNotBlank() }
+            ?: keystoreProperties.getProperty(envName)?.takeIf { it.isNotBlank() }
+            ?: keystoreProperties.getProperty(fileKey)?.takeIf { it.isNotBlank() }
+
+    val storeFilePath = signingProp("STORE_FILE", "storeFile")
+    val storePasswordValue = signingProp("STORE_PASSWORD", "storePassword")
+    val keyAliasValue = signingProp("KEY_ALIAS", "keyAlias")
+    val keyPasswordValue = signingProp("KEY_PASSWORD", "keyPassword")
+    val hasReleaseSigning =
+        storeFilePath != null &&
+            storePasswordValue != null &&
+            keyAliasValue != null &&
+            keyPasswordValue != null
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                // STORE_FILE may be absolute or relative to the project root
+                storeFile = rootProject.file(storeFilePath!!)
+                storePassword = storePasswordValue
+                keyAlias = keyAliasValue
+                keyPassword = keyPasswordValue
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -24,6 +58,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            // Without signing props, assembleRelease still works but produces an unsigned APK.
         }
     }
 

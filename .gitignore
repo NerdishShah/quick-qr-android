@@ -15,6 +15,7 @@ bin/
 gen/
 out/
 release/
+app/release/
 
 # Gradle files
 .gradle/
@@ -34,10 +35,11 @@ captures/
 *.hprof
 *.log
 
-# Keystore files (never commit secrets)
+# Keystore / signing (never commit secrets)
 *.jks
 *.keystore
 !debug.keystore
+keystore.properties
 
 # Google Services
 google-services.json
